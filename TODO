@@ -1,3 +1,5 @@
 16/01/2011
 Add newline support. Right now they're stripped out in the MorseTranslator 
 translation methods and end up as spaces in the output text.
+
+Change the default Tk title bar icon
