@@ -6,6 +6,60 @@
 from Tkinter import *
 from morse import MorseTranslator
 
+#Class combining a Label and Text Entry widget into Frame
+#Abstracted away from the main app class createWidget function
+#for the sake of simplicity and reducing code repetition when creating
+#my Text and Label widgets
+class TextEntryGroup(Frame):
+    def __init__(self, master, name, font):
+        Frame.__init__(self, master)
+
+        self._name = name
+        self._font = font
+        #variable to hold the actual Text widget, instantiation in
+        #createWidget
+        self._textInputWidget = None
+        self._createWidgets()
+
+    def _createWidgets(self):
+
+        """Create & pack the Text and Label widgets that make up this 
+        TextEntryGroup."""
+
+        nameLabel = Label(self,
+                        text=self._name,
+                        relief=GROOVE,
+                        width=len(self._name), 
+                        anchor=CENTER,
+                        font=self._font
+                        )
+
+        nameLabel.pack(side=TOP, anchor=NW)
+
+        inFrame = Frame(self)
+        inFrame.pack(fill=BOTH, side=BOTTOM, expand=YES)
+
+        textScroll = Scrollbar(inFrame)
+        textScroll.pack(side=RIGHT, fill=Y)
+
+        self._textInputWidget = Text(inFrame,
+                            width=50,
+                            height=5,
+                            borderwidth=2, 
+                            font=self._font,
+                            yscrollcommand=textScroll.set)
+        
+        self._textInputWidget.pack(side=RIGHT, fill=BOTH, expand=YES)
+        textScroll.config(command=self._textInputWidget.yview)
+
+
+    def getTextWidget(self):
+
+        """Return the Text widget instance of the TextEntryGroup"""
+        
+        return self._textInputWidget
+
+
 class MyApp(Frame):
 
     def __init__(self, master):
@@ -22,46 +76,14 @@ class MyApp(Frame):
     def _createWidgets(self):
 
         """Build the GUI widgets, pack the layout & bind event handlers"""
-
         
-        defFont = ("Monospace", 12, "bold")
+        appFont = ("Monospace", 12, "bold")
 
-        #TOP FRAME--------------------------
-        #Contains labels and IN_FRAME
-        topFrame = Frame(self)
-        topFrame.pack(fill=BOTH, side=TOP, expand=YES)
+        plainText = TextEntryGroup(self, "Text", appFont)
+        plainText.pack(fill=BOTH, side=TOP, expand=YES)
 
-        inLabel = Label(topFrame,
-                        text="Text",
-                        relief=GROOVE,
-                        width=6, 
-                        anchor=CENTER,
-                        font=defFont)
-
-        inLabel.pack(side=TOP, anchor=NW)
-
-        #IN FRAME
-        #within TOP FRAME, contains upper Text widget & Scrollbar
-        inFrame = Frame(topFrame)
-        inFrame.pack(fill=BOTH, side=BOTTOM, expand=YES)
-
-        plainTextScroll = Scrollbar(inFrame)
-        plainTextScroll.pack(side=RIGHT, fill=Y)
-
-        plainTextArea = Text(inFrame,
-                            width=50,
-                            height=5,
-                            borderwidth=2, 
-                            font=defFont,
-                            yscrollcommand=plainTextScroll.set)
-        
-        plainTextArea.pack(side=RIGHT, fill=BOTH, expand=YES)
-        plainTextScroll.config(command=plainTextArea.yview)
-
-        #END TOP FRAME --------------------
-        
-        #Spacing frame between TOP FRAME and BOTTOM FRAME
-        #contains RadioButtons to toggle text entry area
+        #Spacing frame between top TextEntryGroup and bottom TextEntryGroup 
+        #contains RadioButtons to toggle text entry araea
         seperator = Frame(self, bd=2, relief=GROOVE)
         seperator.pack(fill=NONE, padx=10, pady=10)
  
@@ -82,63 +104,32 @@ class MyApp(Frame):
                             pady=5)
 
         button2.pack(side=BOTTOM, padx=3, pady=2)
-
-        #BOTTOM FRAME----------------------
-        #Contains label and OUT FRAME
-        bottomFrame = Frame(self)
-        bottomFrame.pack(fill=BOTH, side=TOP, expand=YES)
         
-        outLabel = Label(bottomFrame,
-                        text="Morse",
-                        relief=GROOVE,
-                        width=6,
-                        anchor=CENTER,
-                        font=defFont)
+        morseText = TextEntryGroup(self, "Morse", appFont)
+        morseText.pack(fill=BOTH, side=TOP, expand=YES)
 
-        outLabel.pack(side=TOP, anchor=NW)
-        
-        #OUT FRAME
-        #Contains Text widget and it's associated scrollbar
-        outFrame = Frame(bottomFrame)
-        outFrame.pack(side=BOTTOM, fill=BOTH, expand=YES)
-
-        morseScroll = Scrollbar(outFrame)
-        morseScroll.pack(side=RIGHT, fill=Y)
-
-        morseTextArea = Text(outFrame,
-                            width=50,
-                            height=5,
-                            borderwidth=2, 
-                            font=defFont,
-                            yscrollcommand=morseScroll.set)
-
-        morseTextArea.pack(side=RIGHT, fill=BOTH, expand=YES)
-        morseScroll.config(command=morseTextArea.yview)
-        #END BOTTOM FRAME----------------------
-
-        
         #Bind event handlers to Text and Radiobutton widgets
         #Lambda used to send different parameters to the
         #same event handlers
         #see self.UpdateText() & self._switchTextArea() below
-        morseTextArea.bind("<KeyRelease>",
+        morseText.getTextWidget().bind("<KeyRelease>",
                             lambda event, 
-                            arg1=plainTextArea,
+                            arg1=plainText.getTextWidget(),
                             arg2=self.translator.convertFromMorse:
                             self._updateText(event, arg1, arg2))
 
-        plainTextArea.bind("<KeyRelease>",
+        plainText.getTextWidget().bind("<KeyRelease>",
                             lambda event,
-                            arg1=morseTextArea,
+                            arg1=morseText.getTextWidget(),
                             arg2=self.translator.convertToMorse:
                             self._updateText(event, arg1, arg2))
 
-        button1.config(command=lambda arg1=plainTextArea,
-                                arg2=morseTextArea:
+        button1.config(command=lambda arg1=plainText.getTextWidget(),
+                                arg2=morseText.getTextWidget():
                                 self._switchTextArea(arg1,arg2))
         
-        button2.config(command=lambda arg1=morseTextArea,
-                                arg2=plainTextArea:
+        button2.config(command=lambda arg1=morseText.getTextWidget(),
+                                arg2=plainText.getTextWidget():
                                 self._switchTextArea(arg1,arg2))
 
         #set the Text to Morse mode at startup
