@@ -5,6 +5,7 @@
 
 from Tkinter import *
 from morse import MorseTranslator
+import platform
 
 #Class combining a Label and Text Entry widget into Frame
 #Abstracted away from the main app class createWidget function
@@ -179,7 +180,25 @@ class MyApp(Frame):
         toActivate.delete(1.0, 'end')
         toActivate.focus_force()
 
+def setTitleIcon(tkinstance):
+    """Detect the platform and set the appropriate title bar icon.  If
+    OS can't be detected, or no appropriate icon file is present, no icon is
+    set"""
+
+    osStr = platform.system()
+
+    if(osStr == "Windows"):
+        tkinstance.iconbitmap('icon.ico')
+        return True
+    elif(osStr == "Linux"):
+        tkinstance.iconbitmap('@icon.xbm')
+        return True
+    else:
+        return False
+
 root = Tk()
+
+setTitleIcon(root)
 root.title("Morse Code Translator")
 
 app = MyApp(root)
