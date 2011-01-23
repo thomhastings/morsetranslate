@@ -6,6 +6,7 @@
 from Tkinter import *
 from morse import MorseTranslator
 import platform
+import os
 
 #Class combining a Label and Text Entry widget into Frame
 #Abstracted away from the main app class createWidget function
@@ -186,15 +187,19 @@ def setTitleIcon(tkinstance):
     set"""
 
     osStr = platform.system()
+    pathRoot = os.path.dirname(__file__)
+    iconsDir = "icons"
 
     if(osStr == "Windows"):
-        tkinstance.iconbitmap('icon.ico')
-        return True
+        filename = "icon.ico"
     elif(osStr == "Linux"):
-        tkinstance.iconbitmap('@icon.xbm')
-        return True
+        iconsDir = '@' + iconsDir
+        filename = "icon.xbm"
     else:
         return False
+
+    tkinstance.iconbitmap(os.path.join(iconsDir,filename))
+    return True
 
 root = Tk()
 
